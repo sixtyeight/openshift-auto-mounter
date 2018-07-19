@@ -31,11 +31,12 @@ public class App {
 	public static void main(String[] args) throws InterruptedException {
 		String master = "https://192.168.99.100:8443";
 
+		final String NAMESPACE = System.getenv("AM_NAMESPACE");
+		
 		OpenShiftConfig config = new OpenShiftConfigBuilder()//
 				.withMasterUrl(master)//
-				.withNamespace("automounter")//
-				.withUsername("admin")//
-				.withPassword("admin")//
+				.withNamespace(NAMESPACE)//
+				.withOauthToken(System.getenv("AM_TOKEN"))//
 				.build();
 
 		try (OpenShiftClient client = new DefaultOpenShiftClient(config)) {
@@ -46,7 +47,7 @@ public class App {
 							.withNewMetadata().withGenerateName("automount-")//
 							.endMetadata()//
 							.withType("Information")//
-							.withInvolvedObject(new ObjectReferenceBuilder().withNamespace("automounter").build())//
+							.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
 							.withReason("Exiting")//
 							.withMessage("Shutting down")//
 							.build();
@@ -60,7 +61,7 @@ public class App {
 					.withNewMetadata().withGenerateName("automount-")//
 					.endMetadata()//
 					.withType("Information")//
-					.withInvolvedObject(new ObjectReferenceBuilder().withNamespace("automounter").build())//
+					.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
 					.withReason("Started")//
 					.withMessage("Watching for automount requests")//
 					.build();
@@ -148,9 +149,6 @@ public class App {
 						// nothing to do
 					}
 				}
-
-				System.out.println("\nsleeping... ");
-				System.out.println();
 				Thread.sleep(5000);
 			}
 		}
