@@ -34,7 +34,8 @@ public class App {
 		String master = "https://192.168.99.100:8443";
 
 		final String NAMESPACE = System.getenv("AM_NAMESPACE");
-
+		final String EXPECTED_POD_NAME = System.getenv("HOSTNAME");
+		
 		OpenShiftConfig config = new OpenShiftConfigBuilder()//
 				.withMasterUrl(master)//
 				.withNamespace(NAMESPACE)//
@@ -50,7 +51,10 @@ public class App {
 							.endMetadata()//
 							.withType("Information")//
 							.withLastTimestamp(now())//
-							.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
+							.withInvolvedObject(new ObjectReferenceBuilder()//
+									.withNamespace(NAMESPACE)//
+									.withKind("Pod")//
+									.withName(EXPECTED_POD_NAME).build())//
 							.withReason("Exiting")//
 							.withMessage("Shutting down")//
 							.build();
@@ -65,7 +69,10 @@ public class App {
 					.endMetadata()//
 					.withType("Information")//
 					.withLastTimestamp(now())//
-					.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
+					.withInvolvedObject(new ObjectReferenceBuilder()//
+							.withNamespace(NAMESPACE)//
+							.withKind("Pod")//
+							.withName(EXPECTED_POD_NAME).build())//
 					.withReason("Started")//
 					.withMessage("Watching for automount requests")//
 					.build();
