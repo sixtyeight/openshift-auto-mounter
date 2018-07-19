@@ -1,6 +1,8 @@
 package com.example.openshift.automounter;
 
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,7 @@ public class App {
 		String master = "https://192.168.99.100:8443";
 
 		final String NAMESPACE = System.getenv("AM_NAMESPACE");
-		
+
 		OpenShiftConfig config = new OpenShiftConfigBuilder()//
 				.withMasterUrl(master)//
 				.withNamespace(NAMESPACE)//
@@ -47,6 +49,7 @@ public class App {
 							.withNewMetadata().withGenerateName("automount-")//
 							.endMetadata()//
 							.withType("Information")//
+							.withLastTimestamp(now())//
 							.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
 							.withReason("Exiting")//
 							.withMessage("Shutting down")//
@@ -61,6 +64,7 @@ public class App {
 					.withNewMetadata().withGenerateName("automount-")//
 					.endMetadata()//
 					.withType("Information")//
+					.withLastTimestamp(now())//
 					.withInvolvedObject(new ObjectReferenceBuilder().withNamespace(NAMESPACE).build())//
 					.withReason("Started")//
 					.withMessage("Watching for automount requests")//
@@ -153,6 +157,10 @@ public class App {
 			}
 		}
 		System.out.println("exiting");
+	}
+
+	private static String now() {
+		return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(new Date());
 	}
 
 }
