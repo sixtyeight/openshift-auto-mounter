@@ -49,7 +49,7 @@ public class App {
 					Event event = new EventBuilder()//
 							.withNewMetadata().withGenerateName("automount-")//
 							.endMetadata()//
-							.withType("Information")//
+							.withType("Normal")//
 							.withLastTimestamp(now())//
 							.withInvolvedObject(new ObjectReferenceBuilder()//
 									.withNamespace(NAMESPACE)//
@@ -67,7 +67,7 @@ public class App {
 			Event event = new EventBuilder()//
 					.withNewMetadata().withGenerateName("automount-")//
 					.endMetadata()//
-					.withType("Information")//
+					.withType("Normal")//
 					.withLastTimestamp(now())//
 					.withInvolvedObject(new ObjectReferenceBuilder()//
 							.withNamespace(NAMESPACE)//
