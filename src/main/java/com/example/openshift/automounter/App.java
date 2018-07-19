@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.EventBuilder;
+import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -23,18 +26,47 @@ import io.fabric8.openshift.client.OpenShiftConfigBuilder;
 
 public class App {
 
+	private static volatile boolean running = true;
+
 	public static void main(String[] args) throws InterruptedException {
 		String master = "https://192.168.99.100:8443";
 
 		OpenShiftConfig config = new OpenShiftConfigBuilder()//
 				.withMasterUrl(master)//
 				.withNamespace("automounter")//
-				.withUsername("developer")//
-				.withPassword("developer")//
+				.withUsername("admin")//
+				.withPassword("admin")//
 				.build();
 
 		try (OpenShiftClient client = new DefaultOpenShiftClient(config)) {
-			while (true) {
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					Event event = new EventBuilder()//
+							.withNewMetadata().withGenerateName("automount-")//
+							.endMetadata()//
+							.withType("Information")//
+							.withInvolvedObject(new ObjectReferenceBuilder().withNamespace("automounter").build())//
+							.withReason("Exiting")//
+							.withMessage("Shutting down")//
+							.build();
+					client.events().create(event);
+
+					running = false;
+				}
+			});
+
+			Event event = new EventBuilder()//
+					.withNewMetadata().withGenerateName("automount-")//
+					.endMetadata()//
+					.withType("Information")//
+					.withInvolvedObject(new ObjectReferenceBuilder().withNamespace("automounter").build())//
+					.withReason("Started")//
+					.withMessage("Watching for automount requests")//
+					.build();
+			client.events().create(event);
+
+			while (running) {
 				DeploymentConfigList dcs = client.deploymentConfigs().withLabel("automount", "true").list();
 
 				for (DeploymentConfig dc : dcs.getItems()) {
@@ -58,6 +90,7 @@ public class App {
 
 							PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()//
 									.withNewMetadata()//
+									.addToAnnotations("example.com/generated-by", "automounter")//
 									.addToLabels("automount", name)//
 									.withGenerateName("automount-" + name + "-")//
 									.and()//
@@ -121,6 +154,7 @@ public class App {
 				Thread.sleep(5000);
 			}
 		}
+		System.out.println("exiting");
 	}
 
 }
