@@ -31,13 +31,16 @@ public class App {
 	private static volatile boolean running = true;
 
 	public static void main(String[] args) throws InterruptedException {
-		String master = "https://192.168.99.100:8443";
+		String masterUrl = "https://openshift.default.svc";
+		if (System.getenv("AM_MASTER_URL") != null) {
+			masterUrl = System.getenv("AM_MASTER_URL");
+		}
 
 		final String NAMESPACE = System.getenv("AM_NAMESPACE");
 		final String EXPECTED_POD_NAME = System.getenv("HOSTNAME");
-		
+
 		OpenShiftConfig config = new OpenShiftConfigBuilder()//
-				.withMasterUrl(master)//
+				.withMasterUrl(masterUrl)//
 				.withNamespace(NAMESPACE)//
 				.withOauthToken(System.getenv("AM_TOKEN"))//
 				.build();
